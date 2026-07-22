@@ -43,6 +43,20 @@ python -m harmonicdna.cli chords song_a.mp3
 
 ---
 
+## Testing
+
+Install the dependencies and run the suite:
+
+```bash
+python -m venv .venv
+.venv/Scripts/pip install -r requirements.txt pytest   # Linux/macOS: .venv/bin/pip
+.venv/Scripts/python -m pytest -v
+```
+
+Exercise the CLI directly with `python -m harmonicdna.cli --help`.
+
+---
+
 ## Project structure
 
 ```

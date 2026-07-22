@@ -24,7 +24,7 @@ def similarity_score(result: AlignmentResult,
     if max_possible <= 0:
         norm = 0.0
     else:
-        norm = min(1.0, result.raw_score / max_possible)
+        norm = min(1.0, result.score / max_possible)
 
     if norm >= 0.95:
         verdict = "identical"
@@ -36,7 +36,7 @@ def similarity_score(result: AlignmentResult,
         verdict = "distant"
 
     return SimilarityScore(
-        raw_score  = result.raw_score,
+        raw_score  = result.score,
         normalised = round(norm, 3),
         identity   = result.identity,
         verdict    = verdict,

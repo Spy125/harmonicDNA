@@ -32,7 +32,11 @@ def _make_templates() -> tuple[list[str], np.ndarray]:
             t[(i + offset) % 12] = 1.0
         names.append(f"{root}min")
         templates.append(t)
-    return names, np.array(templates)   # (24, 12)
+    matrix = np.array(templates)                       # (24, 12)
+    # Normalise each template to unit length so that the dot product with a
+    # unit-length chroma frame is a true cosine similarity in [0, 1].
+    matrix /= np.linalg.norm(matrix, axis=1, keepdims=True)
+    return names, matrix
 
 
 _CHORD_NAMES, _TEMPLATES = _make_templates()
