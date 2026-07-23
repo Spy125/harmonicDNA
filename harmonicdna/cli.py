@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import sys
 from pathlib import Path
 
 import typer
@@ -13,6 +14,12 @@ from harmonicdna.chord_detector import detect_chords, chords_to_sequence
 from harmonicdna.aligner import align
 from harmonicdna.scoring import similarity_score, self_align_score
 from harmonicdna.visualiser import alignment_to_text, chord_timeline, render_html_comparison
+
+# Windows consoles often default to cp1252, which mangles the non-ASCII
+# characters in the output; force UTF-8 where the stream supports it.
+for _stream in (sys.stdout, sys.stderr):
+    if hasattr(_stream, "reconfigure"):
+        _stream.reconfigure(encoding="utf-8", errors="replace")
 
 app     = typer.Typer(name="harmonicdna", add_completion=False)
 console = Console()
@@ -61,6 +68,24 @@ def compare_cmd(
         render_html_comparison(file_a.name, seq_a, file_b.name, seq_b,
                                 result, output_path=str(html_out))
         console.print(f"HTML saved -> {html_out}")
+
+
+@app.command("chords")
+def chords_cmd(
+    file: Path = typer.Argument(..., help="Audio file to analyse"),
+    min_conf: float = typer.Option(0.5, "--min-confidence"),
+):
+    """Detect and print the chord sequence of a single audio file."""
+    console.print(f"[bold]Analysing:[/bold] {file.name}")
+    chroma = compute_chromagram(str(file))
+    labels = detect_chords(chroma, min_confidence=min_conf)
+    seq    = chords_to_sequence(labels)
+    if not seq:
+        console.print("[red]No chords detected above the confidence threshold.[/red]")
+        raise typer.Exit(1)
+    console.print(f"  {len(labels)} frames, {len(seq)} unique chords")
+    console.print(f"  Timeline: {chord_timeline(labels)}")
+    console.print(f"  Sequence: {' -> '.join(seq)}")
 
 
 if __name__ == "__main__":
